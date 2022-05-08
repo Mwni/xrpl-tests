@@ -1,0 +1,11 @@
+{
+	"name": "new-acc-lost-tx",
+	"type": "module",
+	"version": "1.0.0",
+	"main": "run.js",
+	"license": "ISC",
+	"dependencies": {
+		"node-fetch": "^3.2.4",
+		"xrpl": "^2.2.3"
+	}
+}

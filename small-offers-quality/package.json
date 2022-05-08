@@ -1,0 +1,15 @@
+{
+  "name": "small-offers-quality",
+  "type": "module",
+  "version": "1.0.0",
+  "main": "run.js",
+  "license": "ISC",
+  "dependencies": {
+    "@xrplkit/account": "file:../../xrplkit/account",
+    "@xrplkit/amount": "file:../../xrplkit/amount",
+    "@xrplkit/book": "file:../../xrplkit/book",
+    "@xrplkit/socket": "file:../../xrplkit/socket",
+    "@xrplkit/test": "file:../../xrplkit/test",
+    "@xrplkit/xfl": "file:../../xrplkit/xfl"
+  }
+}

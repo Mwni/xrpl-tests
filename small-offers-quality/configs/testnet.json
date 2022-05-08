@@ -1,0 +1,6 @@
+{
+	"node": "wss://s.altnet.rippletest.net:51233",
+	"faucet": {
+		"url": "https://faucet.altnet.rippletest.net/accounts"
+	}
+}

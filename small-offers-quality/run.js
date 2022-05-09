@@ -4,7 +4,7 @@ import { Fund } from '@xrplkit/test'
 import setup from './stages/setup.js'
 import fillBook from './stages/fill-book.js'
 import glitchOffer from './stages/glitch-offer.js'
-import testRealRate from './stages/test-real-rate.js'
+import testEffectiveRate from './stages/test-effective-rate.js'
 
 
 let configId = process.argv[2] || 'testnet'
@@ -22,7 +22,7 @@ const socket = new Socket(config.node)
 
 const fund = new Fund({ 
 	socket,
-	walletFile: 'wallets.json',
+	walletFile: `wallets.${configId}.json`,
 	faucet: config.faucet,
 	genesis: config.genesis
 })
@@ -43,7 +43,7 @@ for(let { buy, sell, price } of tests){
 	await setup(ctx)
 	await fillBook(ctx)
 	await glitchOffer(ctx)
-	await testRealRate(ctx)
+	await testEffectiveRate(ctx)
 }
 
 

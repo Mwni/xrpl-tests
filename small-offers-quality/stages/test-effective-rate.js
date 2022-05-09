@@ -4,6 +4,10 @@ import { toRippled } from '@xrplkit/amount'
 
 
 export default async function ({ socket, fund, sides, book, buy, sell }){
+	await book.load()
+
+	console.log(`glitched offer:`, book.offers[0])
+
 	console.log(`starting testing series`)
 
 	let testWallet = await fund.getWallet({id: `test-${buy}-${sell}`})
@@ -34,7 +38,7 @@ export default async function ({ socket, fund, sides, book, buy, sell }){
 		})
 
 		if(result.engine_result === 'tesSUCCESS'){
-			console.log(`real exchange rate was ${i * 10}% above market price`)
+			console.log(`effective exchange rate was ${i * 10}% above market`)
 			break
 		}
 	}

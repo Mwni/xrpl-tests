@@ -1,0 +1,6 @@
+{
+	"node": "ws://127.0.0.1:5002",
+	"genesis": {
+		"seed": "snoPBrXtMeMyMHUVTgbuqAfg1SUTb"
+	}
+}

@@ -2,9 +2,10 @@ import Account from '@xrplkit/account'
 import { submitAndWait } from '@xrplkit/test'
 import { mul, div, sub, floor } from '@xrplkit/xfl/string'
 import { toRippled } from '@xrplkit/amount'
+import { fundTrader } from '../lib/iou.js'
 
 
-const nudgeFactor = '1.17'
+const nudgeFactor = '1.25'
 
 
 export default async function({ socket, fund, book, sides, buy, sell }){
@@ -12,28 +13,23 @@ export default async function({ socket, fund, book, sides, buy, sell }){
 	let attackingAccount = new Account({ socket, address: attackingWallet.address })
 	let payToken = sides[0].token
 	let getToken = sides[1].token
-	let smallestUnit = '0.000001'
+	let smallestUnit = payToken.currency === 'XRP'
+		? '0.000001'
+		: '0.00000000000000001'
 
-	console.log(`attacker is acquiring target token ...`)
 
-	await submitAndWait({
+	console.log(`funding attacker`)
+	await fundTrader({ 
 		socket,
-		tx: {
-			TransactionType: 'OfferCreate',
-			Account: attackingWallet.address,
-			TakerGets: '100000',
-			TakerPays: {
-				...payToken,
-				value: '0.001'
-			},
-			Flags: 0x00040000 | 0x00080000
-		},
-		seed: attackingWallet.seed,
-		autofill: true
+		fund,
+		traderWallet: attackingWallet, 
+		issuerWallet: sides[0].issuerWallet,
+		currency: payToken.currency,
+		value: '1'
 	})
+	
 
 	await attackingAccount.loadLines()
-
 
 	let balance = attackingAccount.balanceOf(payToken)
 
@@ -72,7 +68,7 @@ export default async function({ socket, fund, book, sides, buy, sell }){
 		autofill: true
 	})
 
-	console.log(`burning tokens ...`)
+	console.log(`burning tokens`)
 
 	await submitAndWait({
 		socket,

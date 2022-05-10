@@ -1,5 +1,6 @@
 import Book from '@xrplkit/book'
 import { submitAndWait } from '@xrplkit/test'
+import { createIssuer } from '../lib/iou.js'
 
 export default async function(ctx){
 	let { socket, fund, buy, sell } = ctx
@@ -12,26 +13,15 @@ export default async function(ctx){
 		let { currency } = side
 
 		if(currency !== 'XRP'){
-			side.isNewIssuingWallet = !await fund.hasWallet({id: `issuer-${currency}`})
-			side.issuingWallet = await fund.getWallet({id: `issuer-${currency}`, balance: '1000'})
+			side.issuerWallet = await createIssuer({ 
+				socket,
+				fund,
+				id: `issuer-${currency}` 
+			})
+			
 			side.token = {
 				currency,
-				issuer: side.issuingWallet.address
-			}
-
-			if(side.isNewIssuingWallet){
-				console.log(`enabling rippling on issuing wallet ...`)
-
-				await submitAndWait({
-					socket,
-					tx: {
-						TransactionType: 'AccountSet',
-						Account: side.issuingWallet.address,
-						SetFlag: 8
-					},
-					seed: side.issuingWallet.seed,
-					autofill: true
-				})
+				issuer: side.issuerWallet.address
 			}
 		}else{
 			side.token = { 

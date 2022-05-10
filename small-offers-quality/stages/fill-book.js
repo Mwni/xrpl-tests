@@ -1,58 +1,36 @@
 import { submitAndWait } from '@xrplkit/test'
 import { mul } from '@xrplkit/xfl/string'
 import { toRippled } from '@xrplkit/amount'
+import { fundTrader } from '../lib/iou.js'
 
 
 export default async function({ socket, fund, book, sides, price }){
 	await book.load()
 
 	if(book.offers.length === 0){
-		console.log(`creating counterparty book ...`)
+		console.log(`creating counterparty book`)
 
-		let assetIssuingWallet = sides[0].issuingWallet
+		let issuerWallet = sides[0].issuerWallet
 		let makerCurrency = sides[0].currency
 		let makerNew = !fund.hasWallet({id: `maker-${makerCurrency}`})
 		let makerWallet = await fund.getWallet({id: `maker-${makerCurrency}`, balance: '1000'})
 
 		if(makerNew && makerCurrency !== 'XRP'){
-			console.log(`funding market maker with 1M ${makerCurrency} ...`)
-
-			await submitAndWait({
+			console.log(`funding market making wallet`)
+			await fundTrader({
 				socket,
-				tx: {
-					TransactionType: 'TrustSet',
-					Account: makerWallet.address,
-					LimitAmount: {
-						currency: makerCurrency,
-						issuer: assetIssuingWallet.address,
-						value: '1000000'
-					},
-					Flags: 0x00020000
-				},
-				seed: makerWallet.seed,
-				autofill: true
-			})
-
-			await submitAndWait({
-				socket,
-				tx: {
-					TransactionType: 'Payment',
-					Account: assetIssuingWallet.address,
-					Destination: makerWallet.address,
-					Amount: {
-						currency: makerCurrency,
-						issuer: assetIssuingWallet.address,
-						value: '1000000'
-					}
-				},
-				seed: assetIssuingWallet.seed,
-				autofill: true
+				fund,
+				traderWallet: makerWallet, 
+				issuerWallet, 
+				currency: makerCurrency,
+				value: '1000000' 
 			})
 		}
 		
 		for(let i=0; i<3; i++){
-			let paysValue = mul(price, 1 + i * 0.025)
-			let getsValue = '1'
+			let incrementalPrice = mul(price, 1 + i * 0.025)
+			let getsValue = '100000'
+			let paysValue = mul(getsValue, incrementalPrice)
 
 			await submitAndWait({
 				socket,

@@ -30,7 +30,7 @@ const fund = new Fund({
 const tests = [
 	{ buy: 'XAU', sell: 'XRP', price: '100' },
 	//{ buy: 'XRP', sell: 'XAU', price: '0.01' },
-	//{ buy: 'XAU', sell: 'USD', price: '10000' },
+	//{ buy: 'USD', sell: 'XAU', price: '0.01' },
 ]
 
 

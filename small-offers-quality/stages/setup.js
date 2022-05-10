@@ -1,41 +1,40 @@
 import Book from '@xrplkit/book'
-import { submitAndWait } from '@xrplkit/test'
-import { createIssuer } from '../lib/iou.js'
+import { fundWallets } from '../lib/wallet.js'
+import { submit } from '../lib/tx.js'
 
 export default async function(ctx){
-	let { socket, fund, buy, sell } = ctx
-	let sides = [
-		{ currency: buy },
-		{ currency: sell }
-	]
+	let { socket, config, test } = ctx
+	let [ baseIssuer, quoteIssuer, honestTrader, rogueTrader, tester ] = await fundWallets({ socket, config, num: 5 })
+	let wallets = { baseIssuer, quoteIssuer, honestTrader, rogueTrader, tester }
 
-	for(let side of sides){
-		let { currency } = side
+	let base = test.base === 'XRP'
+		? { currency: 'XRP' }
+		: { currency: test.base, issuer: baseIssuer.address }
 
-		if(currency !== 'XRP'){
-			side.issuerWallet = await createIssuer({ 
-				socket,
-				fund,
-				id: `issuer-${currency}` 
-			})
-			
-			side.token = {
-				currency,
-				issuer: side.issuerWallet.address
-			}
-		}else{
-			side.token = { 
-				currency 
-			}
-		}
-	}
+	let quote = test.quote === 'XRP'
+		? { currency: 'XRP' }
+		: { currency: test.quote, issuer: quoteIssuer.address }
 
 	let book = new Book({
 		socket,
-		takerPays: { ...sides[1].token },
-		takerGets: { ...sides[0].token },
+		takerPays: quote,
+		takerGets: base,
 	})
 
-	ctx.book = book
-	ctx.sides = sides
+	console.log('configuring issuing accounts')
+
+	for(let wallet of [baseIssuer, quoteIssuer]){
+		await submit({
+			socket,
+			tx: {
+				TransactionType: 'AccountSet',
+				Account: wallet.address,
+				SetFlag: 8
+			},
+			seed: wallet.seed,
+			autofill: true
+		})
+	}
+
+	return { ...ctx, wallets, base, quote, book }
 }

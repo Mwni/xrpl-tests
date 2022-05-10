@@ -1,56 +1,58 @@
-import { submitAndWait } from '@xrplkit/test'
 import { mul } from '@xrplkit/xfl/string'
 import { toRippled } from '@xrplkit/amount'
+import { submit } from '../lib/tx.js'
 import { fundTrader } from '../lib/iou.js'
 
 
-export default async function({ socket, fund, book, sides, price }){
-	await book.load()
+export default async function(ctx){
+	let { socket, config, book, test, wallets, base, quote } = ctx
 
-	if(book.offers.length === 0){
-		console.log(`creating counterparty book`)
+	console.log(`creating virtual counterparty book`)
 
-		let issuerWallet = sides[0].issuerWallet
-		let makerCurrency = sides[0].currency
-		let makerNew = !fund.hasWallet({id: `maker-${makerCurrency}`})
-		let makerWallet = await fund.getWallet({id: `maker-${makerCurrency}`, balance: '1000'})
+	if(base.currency !== 'XRP'){
+		console.log(`funding market making wallet`)
 
-		if(makerNew && makerCurrency !== 'XRP'){
-			console.log(`funding market making wallet`)
-			await fundTrader({
-				socket,
-				fund,
-				traderWallet: makerWallet, 
-				issuerWallet, 
-				currency: makerCurrency,
-				value: '100000' 
-			})
-		}
-		
-		for(let i=0; i<3; i++){
-			let incrementalPrice = mul(price, 1 + i * 0.025)
-			let getsValue = '100'
-			let paysValue = mul(getsValue, incrementalPrice)
+		await fundTrader({
+			socket,
+			traderWallet: wallets.honestTrader, 
+			issuerWallet: wallets.baseIssuer, 
+			currency: base.currency,
+			value: '100000' 
+		})
+	}
 
-			await submitAndWait({
-				socket,
-				tx: {
-					TransactionType: 'OfferCreate',
-					Account: makerWallet.address,
-					TakerPays: toRippled({
-						...sides[1].token,
-						value: paysValue
-					}),
-					TakerGets: toRippled({
-						...sides[0].token,
-						value: getsValue
-					}),
-				},
-				seed: makerWallet.seed,
-				autofill: true
-			})
-		}
+	console.log(`creating 3 simulated offers`)
+	
+	for(let i=0; i<3; i++){
+		let incrementalPrice = mul(test.price, 1 + i * 0.025)
+		let getsValue = '100'
+		let paysValue = mul(getsValue, incrementalPrice)
 
+		await submit({
+			socket,
+			tx: {
+				TransactionType: 'OfferCreate',
+				Account: wallets.honestTrader.address,
+				TakerPays: toRippled({
+					...quote,
+					value: paysValue
+				}),
+				TakerGets: toRippled({
+					...base,
+					value: getsValue
+				}),
+			},
+			seed: wallets.honestTrader.seed,
+			autofill: true
+		})
+	}
+
+
+	while(book.offers.length === 0){
+		await new Promise(resolve => setTimeout(resolve, 500))
 		await book.load()
 	}
+
+
+	return ctx
 }

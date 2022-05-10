@@ -1,28 +1,25 @@
-import { submit, submitAndWait } from '@xrplkit/test'
 import { mul, div } from '@xrplkit/xfl/string'
 import { toRippled } from '@xrplkit/amount'
 import { fundTrader } from '../lib/iou.js'
+import { submit } from '../lib/tx.js'
 
 const rateIncreasePerStep = 0.025
 
 
-export default async function ({ socket, fund, sides, book, buy, sell }){
+export default async function (ctx){
+	let { socket, book, wallets, base, quote } = ctx
+
 	await book.load()
 
 	console.log(`glitched offer:`, book.offers[0])
-	console.log(`starting testing series`)
+	console.log(`starting testing series in ${rateIncreasePerStep * 100}% increments`)
 
-	let testWallet = await fund.getWallet({id: `test-${buy}-${sell}`})
-	let spendSide = sides[1]
-
-
-	if(spendSide.currency !== 'XRP'){
+	if(quote.currency !== 'XRP'){
 		await fundTrader({
 			socket,
-			fund,
-			traderWallet: testWallet,
-			issuerWallet: spendSide.issuerWallet,
-			currency: spendSide.currency,
+			traderWallet: wallets.tester,
+			issuerWallet: wallets.quoteIssuer,
+			currency: quote.currency,
 			value: '1'
 		})
 	}
@@ -36,18 +33,18 @@ export default async function ({ socket, fund, sides, book, buy, sell }){
 			socket,
 			tx: {
 				TransactionType: 'OfferCreate',
-				Account: testWallet.address,
+				Account: wallets.tester.address,
 				TakerPays: toRippled({
-					...sides[0].token,
+					...base,
 					value: units
 				}),
 				TakerGets: toRippled({
-					...sides[1].token,
+					...quote,
 					value: total
 				}),
 				Flags: 0x00040000 | 0x00080000
 			},
-			seed: testWallet.seed,
+			seed: wallets.tester.seed,
 			autofill: true
 		})
 

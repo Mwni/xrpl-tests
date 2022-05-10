@@ -1,6 +1,5 @@
 import fs from 'fs'
 import Socket from '@xrplkit/socket'
-import { Fund } from '@xrplkit/test'
 import setup from './stages/setup.js'
 import fillBook from './stages/fill-book.js'
 import glitchOffer from './stages/glitch-offer.js'
@@ -20,30 +19,22 @@ try{
 
 const socket = new Socket(config.node)
 
-const fund = new Fund({ 
-	socket,
-	walletFile: `wallets.${configId}.json`,
-	faucet: config.faucet,
-	genesis: config.genesis
-})
-
 const tests = [
-	{ buy: 'XAU', sell: 'XRP', price: '100' },
+	{ base: 'XAU', quote: 'XRP', price: '100' },
 	//{ buy: 'XRP', sell: 'XAU', price: '0.01' },
 	//{ buy: 'USD', sell: 'XAU', price: '0.01' },
 ]
 
 
-for(let { buy, sell, price } of tests){
-	console.log(``)
-	console.log(`*** test: buying ${buy} with ${sell} ***`)
+for(let test of tests){
+	console.log(`*** test: buying ${test.base} with ${test.quote} ***`)
 
-	const ctx = { socket, fund, buy, sell, price }
+	let ctx = { config, socket, test }
 
-	await setup(ctx)
-	await fillBook(ctx)
-	await glitchOffer(ctx)
-	await testEffectiveRate(ctx)
+	ctx = await setup(ctx)
+	ctx = await fillBook(ctx)
+	ctx = await glitchOffer(ctx)
+	ctx = await testEffectiveRate(ctx)
 }
 
 

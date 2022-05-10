@@ -1,32 +1,8 @@
-import { submitAndWait } from '@xrplkit/test'
-
-
-export async function createIssuer({ id, socket, fund }){
-	let isNew = !fund.hasWallet({ id })
-	let wallet = await fund.getWallet({ id, balance: '1000' })
-			
-
-	if(isNew){
-		console.log(`enabling rippling on issuing wallet ...`)
-
-		await submitAndWait({
-			socket,
-			tx: {
-				TransactionType: 'AccountSet',
-				Account: wallet.address,
-				SetFlag: 8
-			},
-			seed: wallet.seed,
-			autofill: true
-		})
-	}
-
-	return wallet
-}
+import { submit } from './tx.js'
 
 
 export async function fundTrader({ traderWallet, issuerWallet, currency, value, socket }){
-	await submitAndWait({
+	await submit({
 		socket,
 		tx: {
 			TransactionType: 'TrustSet',
@@ -42,7 +18,7 @@ export async function fundTrader({ traderWallet, issuerWallet, currency, value, 
 		autofill: true
 	})
 
-	await submitAndWait({
+	await submit({
 		socket,
 		tx: {
 			TransactionType: 'Payment',

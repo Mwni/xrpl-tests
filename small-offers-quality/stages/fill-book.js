@@ -23,13 +23,13 @@ export default async function({ socket, fund, book, sides, price }){
 				traderWallet: makerWallet, 
 				issuerWallet, 
 				currency: makerCurrency,
-				value: '1000000' 
+				value: '100000' 
 			})
 		}
 		
 		for(let i=0; i<3; i++){
 			let incrementalPrice = mul(price, 1 + i * 0.025)
-			let getsValue = '100000'
+			let getsValue = '100'
 			let paysValue = mul(getsValue, incrementalPrice)
 
 			await submitAndWait({

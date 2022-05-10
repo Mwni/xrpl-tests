@@ -3,6 +3,8 @@ import { mul, div } from '@xrplkit/xfl/string'
 import { toRippled } from '@xrplkit/amount'
 import { fundTrader } from '../lib/iou.js'
 
+const rateIncreasePerStep = 0.025
+
 
 export default async function ({ socket, fund, sides, book, buy, sell }){
 	await book.load()
@@ -28,7 +30,7 @@ export default async function ({ socket, fund, sides, book, buy, sell }){
 
 	for(let i=0; i<100; i++){
 		let total = '1'
-		let price = mul(book.bestPrice, 1 + i * 0.025)
+		let price = mul(book.bestPrice, 1 + i * rateIncreasePerStep)
 		let units = div(total, price)
 		let result = await submit({
 			socket,
@@ -50,7 +52,7 @@ export default async function ({ socket, fund, sides, book, buy, sell }){
 		})
 
 		if(result.engine_result === 'tesSUCCESS'){
-			console.log(`effective exchange rate was ${i * 2.5}% above market`)
+			console.log(`effective exchange rate was ${i * rateIncreasePerStep * 100}% above market`)
 			break
 		}
 	}

@@ -1,7 +1,6 @@
 import fetch from 'node-fetch'
-import { submitAndWait } from '@xrplkit/submit'
+import { submit } from '@xrplkit/submit'
 import { deriveAddress, generateSeed } from '@xrplkit/wallet'
-import { mul } from '@xrplkit/xfl/string'
 
 
 export async function fundWallets({ socket, config, num }){
@@ -9,17 +8,25 @@ export async function fundWallets({ socket, config, num }){
 
 	console.log(`we need ${num} test wallets ...`)
 
-	return Promise.all(
-		Array(num).fill(0).map(async () => {
-			let wallet = config.faucet
-				? await fundWalletFromFaucet({ socket, faucet: config.faucet })
-				: await fundWalletFromGenesis({ socket, genesis: config.genesis })
+	if(config.faucet){
+		return Promise.all(
+			Array(num)
+				.fill(0)
+				.map(() => 
+					fundWalletFromFaucet({ socket, faucet: config.faucet })
+						.then(wallet => console.log(` > funded ${++counter}/${num} wallets`) || wallet)
+				)
+		)
+	}else{
+		let wallets = []
 
+		for(let i=0; i<num; i++){
+			wallets.push(await fundWalletFromGenesis({ socket, genesis: config.genesis }))
 			console.log(` > funded ${++counter}/${num} wallets`)
+		}
 
-			return wallet
-		})
-	)
+		return wallets
+	}
 }
 
 
@@ -57,13 +64,13 @@ async function fundWalletFromGenesis({ socket, genesis }){
 	let address = deriveAddress({ seed })
 	let wallet = { seed, address }
 
-	let result = await submitAndWait({
-		socket: this.socket,
+	let result = await submit({
+		socket,
 		tx: {
 			TransactionType: 'Payment',
 			Account: deriveAddress(genesis),
 			Destination: address,
-			Amount: mul(balance, '1000000')
+			Amount: '1000000000'
 		},
 		...genesis,
 		autofill: true

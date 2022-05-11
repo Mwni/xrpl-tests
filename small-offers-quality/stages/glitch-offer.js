@@ -4,12 +4,11 @@ import { submitAndWait } from '../lib/tx.js'
 import { fundTrader } from '../lib/iou.js'
 
 
-const initialValue = '1'
-const nudgeFactor = '1.17'
+
 
 
 export default async function(ctx){
-	let { socket, wallets, book, base, quote } = ctx
+	let { socket, wallets, book, base, quote, initialValue, nudgeFactor } = ctx
 
 	let smallestUnit = quote.currency === 'XRP' || base.currency === 'XRP'
 		? '0.000001'

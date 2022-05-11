@@ -3,11 +3,9 @@ import { toRippled } from '@xrplkit/amount'
 import { fundTrader } from '../lib/iou.js'
 import { submit } from '../lib/tx.js'
 
-const rateIncreasePerStep = 0.025
-
 
 export default async function (ctx){
-	let { socket, book, wallets, base, quote } = ctx
+	let { socket, book, wallets, base, quote, rateIncreasePerStep } = ctx
 
 	await book.load()
 
@@ -25,7 +23,7 @@ export default async function (ctx){
 	}
 
 
-	for(let i=0; i<100; i++){
+	for(let i=0; i<1000000; i++){
 		let total = '1'
 		let price = mul(book.bestPrice, 1 + i * rateIncreasePerStep)
 		let units = div(total, price)
@@ -50,7 +48,8 @@ export default async function (ctx){
 
 		if(result.engine_result === 'tesSUCCESS'){
 			console.log(`effective exchange rate was ${i * rateIncreasePerStep * 100}% above market`)
-			break
+			console.log(`tx hash: ${result.tx_json.hash}`)
+			return { increase: i * rateIncreasePerStep }
 		}
 	}
 }

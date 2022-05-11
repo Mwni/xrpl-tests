@@ -21,8 +21,8 @@ const socket = new Socket(config.node)
 
 const tests = [
 	{ base: 'XAU', quote: 'XRP', price: '100' },
-	//{ buy: 'XRP', sell: 'XAU', price: '0.01' },
-	//{ buy: 'USD', sell: 'XAU', price: '0.01' },
+	{ base: 'XRP', quote: 'XAU', price: '0.01' },
+	{ base: 'USD', quote: 'XAU', price: '0.000001' },
 ]
 
 

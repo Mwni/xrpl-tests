@@ -11,7 +11,7 @@ const nudgeFactor = '1.17'
 export default async function(ctx){
 	let { socket, wallets, book, base, quote } = ctx
 
-	let smallestUnit = quote.currency === 'XRP'
+	let smallestUnit = quote.currency === 'XRP' || base.currency === 'XRP'
 		? '0.000001'
 		: '0.000000000000000000000000000000000000000000000000000000000000000000000000000000001'
 	
@@ -63,7 +63,12 @@ export default async function(ctx){
 	if(base.currency === 'XRP'){
 		console.log(`disposing of balance`)
 
-		let fee = floor(sub(mul(burnValue, '1000000'), '1'))
+		let { account_info } = await socket.request({
+			command: 'account_info',
+			account: attackingWallet.address
+		})
+
+		let fee = floor(sub(account_info.Balance, '1'))
 
 		await submitAndWait({
 			socket,

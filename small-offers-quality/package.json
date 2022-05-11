@@ -9,7 +9,7 @@
     "@xrplkit/book": "1.1.0",
     "@xrplkit/socket": "1.1.0",
     "@xrplkit/submit": "1.1.0",
-    "@xrplkit/xfl": "1.1.0",
+    "@xrplkit/xfl": "1.1.1",
     "node-fetch": "^3.2.4"
   }
 }

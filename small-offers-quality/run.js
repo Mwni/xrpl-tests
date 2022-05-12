@@ -8,7 +8,7 @@ import { sum } from '@xrplkit/xfl/string'
 import { lte } from '@xrplkit/xfl'
 
 
-const initialValue = '0.01'
+const initialValue = '0.25'
 const nudgeFactor = '1.17'
 const rateIncreasePerStep = 0.025
 
@@ -40,23 +40,8 @@ for(let test of tests){
 
 	ctx = await setup(ctx)
 	ctx = await fillBook(ctx)
-	//ctx = await glitchOffer(ctx)
-	//ctx = await testEffectiveRate(ctx)
-
-	let current = '0.5'
-	let end = '10'
-	let step = '0.1'
-	let table = []
-
-	while(lte(current, end)){
-		let nCtx = await glitchOffer({ ...ctx, nudgeFactor: current })
-		let { increase } = await testEffectiveRate(nCtx)
-
-		table.push({ nudge: current, increase })
-		console.log(table)
-		
-		current = sum(current, step)
-	}
+	ctx = await glitchOffer(ctx)
+	ctx = await testEffectiveRate(ctx)
 }
 
 

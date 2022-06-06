@@ -1,0 +1,6 @@
+{
+	"node": "wss://xls20-sandbox.rippletest.net:51233",
+	"faucet": {
+		"url": "https://faucet-nft.ripple.com/accounts"
+	}
+}
